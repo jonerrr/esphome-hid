@@ -1,0 +1,9 @@
+.venv/
+.esphome/
+**/.esphome/
+__pycache__/
+.pytest_cache/
+secrets.yaml
+.pio/
+.ruff_cache/
+

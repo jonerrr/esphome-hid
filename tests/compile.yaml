@@ -1,0 +1,39 @@
+# Never invoked on boot. Compile coverage for constant strings, string-returning
+# lambdas, owning arguments after a delay, every action, and every condition.
+packages:
+  keyboard: !include ../examples/keyboard.yaml
+script:
+  - id: compile_action_forms
+    parameters:
+      input_value: string
+    then:
+      - hid_keyboard.press:
+          id: keyboard
+          key: a
+          modifiers: [RIGHT_CTRL, LEFT_SHIFT]
+      - hid_keyboard.release: keyboard
+      - hid_keyboard.tap:
+          id: keyboard
+          key: F12
+          modifiers: CTRL_ALT
+      - hid_keyboard.type:
+          id: keyboard
+          text: "Hello, ASCII!"
+      - hid_keyboard.type:
+          id: keyboard
+          text: !lambda return std::string(input_value).append("!");
+      - delay: 1ms
+      - hid_keyboard.type:
+          id: keyboard
+          text: !lambda return input_value;
+      - if:
+          condition:
+            and:
+              - hid_keyboard.is_connected:
+                  id: keyboard
+              - hid_keyboard.is_busy:
+                  id: keyboard
+              - hid_keyboard.last_request_accepted:
+                  id: keyboard
+          then:
+            - hid_keyboard.release_all: keyboard

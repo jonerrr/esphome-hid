@@ -1,0 +1,97 @@
+esphome:
+  name: kvm-keyboard
+  min_version: 2026.10.0
+
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 8MB
+  framework:
+    type: esp-idf
+
+psram:
+  mode: quad
+  speed: 80MHz
+  ignore_not_found: false
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+    components: [hid_keyboard]
+
+logger:
+  hardware_uart: UART0
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+  actions:
+    - action: keyboard_type
+      variables:
+        input_text: string
+      then:
+        - hid_keyboard.type:
+            id: keyboard
+            text: !lambda return input_text;
+        - api.respond:
+            success: !lambda return id(keyboard).last_request_accepted();
+            error_message: !lambda |-
+              return id(keyboard).last_request_accepted() ? "" : id(keyboard).last_result_message();
+    - action: keyboard_tap
+      variables:
+        key: string
+        modifiers: int
+      then:
+        - hid_keyboard.tap:
+            id: keyboard
+            key: !lambda return key;
+            modifiers: !lambda return modifiers;
+        - api.respond:
+            success: !lambda return id(keyboard).last_request_accepted();
+            error_message: !lambda |-
+              return id(keyboard).last_request_accepted() ? "" : id(keyboard).last_result_message();
+    - action: keyboard_press
+      variables:
+        key: string
+        modifiers: int
+      then:
+        - hid_keyboard.press:
+            id: keyboard
+            key: !lambda return key;
+            modifiers: !lambda return modifiers;
+        - api.respond:
+            success: !lambda return id(keyboard).last_request_accepted();
+            error_message: !lambda |-
+              return id(keyboard).last_request_accepted() ? "" : id(keyboard).last_result_message();
+    - action: keyboard_release_all
+      then:
+        - hid_keyboard.release_all: keyboard
+
+ota:
+  - platform: esphome
+
+hid_keyboard:
+  id: keyboard
+  layout: QWERTY_US
+  keypress_duration: 30ms
+  inter_key_delay: 30ms
+  max_text_length: 256
+  queue_size: 4
+  # For separately powered operation, connect a correctly conditioned host
+  # VBUS signal to a free input GPIO and configure vbus_monitor_pin here.
+  # Never connect USB 5V directly to an ESP32 GPIO.
+
+binary_sensor:
+  - platform: template
+    name: Keyboard USB Connected
+    lambda: return id(keyboard).is_connected();
+  - platform: template
+    name: Keyboard Busy
+    lambda: return id(keyboard).is_busy();
+  - platform: template
+    name: Keyboard Last Request Accepted
+    lambda: return id(keyboard).last_request_accepted();
