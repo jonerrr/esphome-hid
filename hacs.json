@@ -1,0 +1,5 @@
+{
+  "name": "PC Keyboard (ESPHome HID)",
+  "render_readme": true,
+  "filename": "esphome-hid.js"
+}

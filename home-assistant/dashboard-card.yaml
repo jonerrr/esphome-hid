@@ -1,0 +1,4 @@
+# Select the discovery sensor in the visual editor, or replace this example ID.
+type: custom:pc-keyboard-card
+title: PC keyboard
+keyboard_entity: sensor.pc_remote_usb_keyboard

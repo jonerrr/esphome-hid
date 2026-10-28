@@ -1,4 +1,5 @@
 #include "hid_keyboard.h"
+#include "keyboard_discovery.h"
 #include "usb_descriptors.h"
 #include "device/dcd.h"
 #include "device/usbd_pvt.h"
@@ -83,6 +84,17 @@ int main() {
   event(TINYUSB_EVENT_ATTACHED);
   run(keyboard, 20);
   assert(!wire.empty() && wire.back() == Report{});
+
+  // Discovery uses the runtime name, including ESPHome's optional MAC suffix.
+  for (const auto* name : {"office-keyboard", "office-keyboard-334455"}) {
+    App.name = name;
+    KeyboardDiscovery discovery;
+    discovery.set_keyboard(&keyboard);
+    discovery.set_metadata("{\"hid_keyboard\":1,\"max_length\":256");
+    discovery.loop();
+    assert(discovery.state == std::string("{\"hid_keyboard\":1,\"max_length\":256,\"node\":\"") + name +
+                                  "\",\"connected\":true,\"busy\":false}");
+  }
 
   // Check descriptors produced by the real TinyUSB macros.
   assert(sizeof(CONFIG_DESCRIPTOR) == 34);

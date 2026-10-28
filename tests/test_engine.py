@@ -46,7 +46,7 @@ def test_transport(tmp_path):
     tinyusb = Path(
         os.environ.get(
             "TINYUSB_SOURCE",
-            ROOT / "examples/.esphome/build/kvm-keyboard/managed_components/espressif__tinyusb/src",
+            ROOT / "examples/.esphome/build/pc-remote/managed_components/espressif__tinyusb/src",
         )
     )
     if not tinyusb.exists():
@@ -68,6 +68,7 @@ def test_transport(tmp_path):
             "-Wextra",
             "-I",
             str(ROOT / "tests/stubs"),
+            "-DUSE_TEXT_SENSOR",
             "-I",
             str(tinyusb),
             "-I",

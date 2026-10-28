@@ -1,6 +1,9 @@
 """Exercise component validation through ESPHome's real configuration pipeline."""
 
+import ast
+import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -94,3 +97,47 @@ def test_invalid_static_actions(tmp_path, action):
 )
 def test_incompatible_platform_or_owner(tmp_path, extra):
     assert validate(tmp_path, **extra).returncode != 0
+
+
+@pytest.mark.parametrize(("node", "limit"), [("office-keyboard", 128), ("bedroom-keyboard", 1024)])
+@pytest.mark.parametrize("mac_suffix", [False, True])
+def test_discovery_uses_configured_identity_and_limit(tmp_path, node, limit, mac_suffix):
+    result = validate(
+        tmp_path,
+        keyboard={"max_text_length": limit},
+        esphome={"name": node, "name_add_mac_suffix": mac_suffix},
+        text_sensor=[
+            {"platform": "hid_keyboard", "name": "USB Keyboard", "hid_keyboard_id": "keyboard"}
+        ],
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "esphome",
+            "compile",
+            str(tmp_path / "test.yaml"),
+            "--only-generate",
+        ],
+        capture_output=True,
+        text=True,
+        env=os.environ,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    source = (tmp_path / ".esphome" / "build" / node / "src" / "main.cpp").read_text()
+    metadata = json.dumps({"hid_keyboard": 1, "max_length": limit}, separators=(",", ":"))[:-1]
+    encoded = re.search(r'set_metadata\(("(?:\\.|[^"\\])*")\)', source)
+    assert encoded is not None
+    assert ast.literal_eval(encoded[1]) == metadata
+    assert "set_keyboard(keyboard)" in source
+
+
+def test_discovery_rejects_unknown_keyboard(tmp_path):
+    result = validate(
+        tmp_path,
+        text_sensor=[
+            {"platform": "hid_keyboard", "name": "USB Keyboard", "hid_keyboard_id": "missing"}
+        ],
+    )
+    assert result.returncode != 0

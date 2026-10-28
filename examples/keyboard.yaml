@@ -1,5 +1,6 @@
 esphome:
-  name: kvm-keyboard
+  name: pc-remote
+  friendly_name: PC Remote
   min_version: 2026.10.0
 
 esp32:
@@ -8,11 +9,6 @@ esp32:
   framework:
     type: esp-idf
 
-psram:
-  mode: quad
-  speed: 80MHz
-  ignore_not_found: false
-
 external_components:
   - source:
       type: local
@@ -20,6 +16,7 @@ external_components:
     components: [hid_keyboard]
 
 logger:
+  level: WARN
   hardware_uart: UART0
 
 wifi:
@@ -30,7 +27,7 @@ api:
   encryption:
     key: !secret api_encryption_key
   actions:
-    - action: keyboard_type
+    - action: type_text
       variables:
         input_text: string
       then:
@@ -67,9 +64,20 @@ api:
             success: !lambda return id(keyboard).last_request_accepted();
             error_message: !lambda |-
               return id(keyboard).last_request_accepted() ? "" : id(keyboard).last_result_message();
-    - action: keyboard_release_all
+    - action: release_all_keys
       then:
         - hid_keyboard.release_all: keyboard
+    - action: clear_input
+      then:
+        - hid_keyboard.release_all: keyboard
+        - hid_keyboard.tap:
+            id: keyboard
+            key: u
+            modifiers: CTRL
+        - api.respond:
+            success: !lambda return id(keyboard).last_request_accepted();
+            error_message: !lambda |-
+              return id(keyboard).last_request_accepted() ? "" : id(keyboard).last_result_message();
 
 ota:
   - platform: esphome
@@ -85,12 +93,17 @@ hid_keyboard:
   # VBUS signal to a free input GPIO and configure vbus_monitor_pin here.
   # Never connect USB 5V directly to an ESP32 GPIO.
 
+text_sensor:
+  - platform: hid_keyboard
+    name: USB Keyboard
+    hid_keyboard_id: keyboard
+
 binary_sensor:
   - platform: template
-    name: Keyboard USB Connected
+    name: USB Keyboard Connected
     lambda: return id(keyboard).is_connected();
   - platform: template
-    name: Keyboard Busy
+    name: USB Keyboard Busy
     lambda: return id(keyboard).is_busy();
   - platform: template
     name: Keyboard Last Request Accepted

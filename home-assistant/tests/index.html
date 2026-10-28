@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PC keyboard card test</title>
+  <style>
+    body { max-width: 540px; margin: 24px auto; padding: 12px; font-family: system-ui; background: #f3f5f7; }
+    pc-keyboard-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px #0002; }
+  </style>
+  <h1>PC keyboard card test</h1>
+  <p>All actions below use a fake Home Assistant connection. No keystrokes reach a PC.</p>
+  <pre id="result">Running…</pre>
+  <script src="../../dist/esphome-hid.js"></script>
+  <script src="card-tests.js"></script>
+  <script>
+    runPCKeyboardCardTests().then(
+      (result) => { document.querySelector("#result").textContent = `${result.passed} checks passed`; },
+      (error) => { document.querySelector("#result").textContent = error.message; throw error; },
+    );
+  </script>
+</html>
