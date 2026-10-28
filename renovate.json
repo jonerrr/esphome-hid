@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":maintainLockFilesWeekly"
+  ],
+  "automerge": false,
+  "packageRules": [
+    {
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["dependency-groups"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchDatasources": ["custom.espressif"],
+      "groupName": "Espressif USB components"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^components/hid_keyboard/__init__\\.py$/"],
+      "matchStrings": [
+        "esp32\\.add_idf_component\\(name=\"(?<depName>espressif/[^\"]+)\", ref=\"(?<currentValue>[^\"]+)\"\\)"
+      ],
+      "datasourceTemplate": "custom.espressif",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:~(?<build>\\d+))?$"
+    }
+  ],
+  "customDatasources": {
+    "espressif": {
+      "defaultRegistryUrlTemplate": "https://components-file.espressif.com/components/{{{packageName}}}.json",
+      "transformTemplates": [
+        "{\"releases\": [versions.{\"version\": version, \"releaseTimestamp\": created_at}]}"
+      ]
+    }
+  }
+}

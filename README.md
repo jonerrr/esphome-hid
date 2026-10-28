@@ -148,18 +148,22 @@ The component logs rejection reasons without logging input text or individual ke
 ## Development
 
 ```bash
-uv run ruff check components tests
-uv run ruff format --check components tests
-uv run clang-format --dry-run --Werror components/hid_keyboard/*.h components/hid_keyboard/*.cpp tests/*.cpp tests/stubs/*.h tests/stubs/esphome/core/*.h
-uv run esphome compile examples/keyboard.yaml
-uv run pytest -q
-node --check dist/esphome-hid.js
-node --check home-assistant/tests/card-tests.js
+mise exec -- uv sync --dev --locked
+mise exec -- uv run playwright install chromium
+mise exec -- uv run ruff check components tests
+mise exec -- uv run ruff format --check components tests
+mise exec -- uv run clang-format --dry-run --Werror components/hid_keyboard/*.h components/hid_keyboard/*.cpp tests/*.cpp tests/stubs/*.h tests/stubs/esphome/core/*.h
+mise exec -- uv run esphome compile examples/keyboard.yaml
+mise exec -- uv run esphome compile tests/compile.yaml
+mise exec -- uv run pytest -q
+mise exec -- node --check dist/esphome-hid.js
+mise exec -- node --check home-assistant/tests/card-tests.js
 ```
 
 Tests cover keyboard scheduling, input validation, USB lifecycle handling,
-descriptors, and dashboard discovery. Build the example before running the tests
-to make its TinyUSB headers available. To run the browser checks,
-serve the repository with `uv run -m http.server 8765 --bind 127.0.0.1` and open
+descriptors, dashboard discovery, and the browser card. Build the example before
+running the tests to make its TinyUSB headers available. CI requires these headers
+so transport tests cannot silently skip. To run the browser checks manually,
+serve the repository with `mise exec -- uv run -m http.server 8765 --bind 127.0.0.1` and open
 `http://127.0.0.1:8765/home-assistant/tests/`. The preview uses simulated actions
 and sends no keystrokes to a PC.

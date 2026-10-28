@@ -1,0 +1,38 @@
+name: Validate keyboard
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 1"
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
+      - run: mise exec -- uv sync --dev --locked
+      - run: mise exec -- uv run ruff check components tests
+      - run: mise exec -- uv run ruff format --check components tests
+      - run: mise exec -- node --check dist/esphome-hid.js
+      - run: mise exec -- node --check home-assistant/tests/card-tests.js
+      - run: mise exec -- uv run clang-format --dry-run --Werror components/hid_keyboard/*.h components/hid_keyboard/*.cpp tests/*.cpp tests/stubs/*.h tests/stubs/esphome/core/*.h
+      - run: mise exec -- cp examples/secrets.example.yaml examples/secrets.yaml
+      - run: mise exec -- uv run esphome compile examples/keyboard.yaml
+      - run: mise exec -- uv run esphome compile tests/compile.yaml
+      - name: Install test browser
+        run: mise exec -- uv run playwright install --with-deps chromium
+      - name: Run Python, C++, and browser tests
+        env:
+          TINYUSB_SOURCE: ${{ github.workspace }}/examples/.esphome/build/pc-remote/managed_components/espressif__tinyusb/src
+        run: |
+          mise exec -- test -d "$TINYUSB_SOURCE"
+          mise exec -- uv run pytest -q
