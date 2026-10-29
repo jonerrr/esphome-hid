@@ -153,7 +153,7 @@ async def to_code(config):
     cg.add(var.set_usb_ids(config["usb_vendor_id"], config["usb_product_id"]))
     if "vbus_monitor_pin" in config:
         cg.add(var.set_vbus_monitor_pin(config["vbus_monitor_pin"]))
-    esp32.add_idf_component(name="espressif/esp_tinyusb", ref="2.2.1")
+    esp32.add_idf_component(name="espressif/esp_tinyusb", ref="2.4.0")
     # Pin TinyUSB too: esp_tinyusb's open minimum otherwise changes the USB core
     # independently of the tested ESPHome release.
     esp32.add_idf_component(name="espressif/tinyusb", ref="0.21.0~2")
