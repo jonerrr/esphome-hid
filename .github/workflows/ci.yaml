@@ -34,7 +34,7 @@ jobs:
         run: mise exec -- uv run playwright install --with-deps chromium
       - name: Run Python, C++, and browser tests
         env:
-          TINYUSB_SOURCE: ${{ github.workspace }}/examples/.esphome/build/pc-remote/managed_components/espressif__tinyusb/src
+          TINYUSB_SOURCE: ${{ github.workspace }}/examples/.esphome/build/pc-remote/managed_components/espressif__esp_tinyusb/tinyusb/src
         run: |
           mise exec -- test -d "$TINYUSB_SOURCE"
           mise exec -- uv run pytest -q

@@ -11,10 +11,6 @@
       "matchManagers": ["pep621"],
       "matchDepTypes": ["dependency-groups"],
       "rangeStrategy": "bump"
-    },
-    {
-      "matchDatasources": ["custom.espressif"],
-      "groupName": "Espressif USB components"
     }
   ],
   "customManagers": [

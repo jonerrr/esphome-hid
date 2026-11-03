@@ -46,7 +46,9 @@ def test_transport(tmp_path):
     tinyusb = Path(
         os.environ.get(
             "TINYUSB_SOURCE",
-            ROOT / "examples/.esphome/build/pc-remote/managed_components/espressif__tinyusb/src",
+            ROOT
+            / "examples/.esphome/build/pc-remote/managed_components"
+            / "espressif__esp_tinyusb/tinyusb/src",
         )
     )
     if not tinyusb.exists():
