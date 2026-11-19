@@ -153,7 +153,7 @@ async def to_code(config):
     cg.add(var.set_usb_ids(config["usb_vendor_id"], config["usb_product_id"]))
     if "vbus_monitor_pin" in config:
         cg.add(var.set_vbus_monitor_pin(config["vbus_monitor_pin"]))
-    esp32.add_idf_component(name="espressif/esp_tinyusb", ref="3.0.0")
+    esp32.add_idf_component(name="espressif/esp_tinyusb", ref="3.0.1")
     for name, value in {
         "CONFIG_TINYUSB_HID_COUNT": 1,
         "CONFIG_TINYUSB_SUSPEND_CALLBACK": True,
