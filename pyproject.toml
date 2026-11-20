@@ -10,7 +10,7 @@ dev = [
   "playwright>=1.65.2",
   "pytest>=9.2.0",
   "ruff==0.17.5",
-  "ziglang==0.17.0",
+  "ziglang==0.17.1",
 ]
 
 [tool.pytest.ini_options]
